@@ -28,13 +28,16 @@ namespace DeltatreChallenge.Controllers
 
         // POST api/products
         [HttpPost]
-        public void Post([FromBody]string product)
+        public List<Product> Post([FromBody]Product product)
         {
-            // Add new product to memory
-
             // If product with name already exists, retun error
+           
+            // Add new product to memory
+            var addedProduct = ProductRepository.RepoInstance.AddProduct(product);
 
-            // return added product to client and add to end of list on app
+            // return list of products with newly added product to client
+            var newList = ProductRepository.RepoInstance.GetProducts();
+            return newList;
         }
 
         // PUT api/products/5
@@ -74,6 +77,12 @@ namespace DeltatreChallenge.Controllers
 
         public Product AddProduct(Product product)
         {
+            bool alreadyExists = products.Any(item => item.Name == product.Name);
+
+            if (alreadyExists)
+            {
+                throw new Exception("Item already exists");
+            }
             try
             {
                 products.Add(product);
