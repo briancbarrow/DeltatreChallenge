@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Net.Http;
+using System.Web;
+using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace DeltatreChallenge.Controllers
 {
-    [Route("api/[controller]")]
+    [Microsoft.AspNetCore.Mvc.Route("api/[controller]")]
     public class ProductsController : Controller
     {
         // GET api/products
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public List<Product> Get()
         {
             // I'll need to return an array/list of products
@@ -19,25 +24,34 @@ namespace DeltatreChallenge.Controllers
             return products;
         }
 
-        // GET api/products/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    return "product2";
-        //}
+        //GET api/products/5
+        [Microsoft.AspNetCore.Mvc.HttpOptions]
+        public string Get(int id)
+        {
+            return "product2";
+        }
 
         // POST api/products
-        [HttpPost]
-        public List<Product> Post([FromBody]Product product)
+        [Microsoft.AspNetCore.Mvc.HttpPost]
+        public List<Product> Post([Microsoft.AspNetCore.Mvc.FromBody]Product product)
         {
-            // If product with name already exists, retun error
-           
-            // Add new product to memory
-            var addedProduct = ProductRepository.RepoInstance.AddProduct(product);
+           try
+            {
+                // Add new product to memory
+                var addedProduct = ProductRepository.RepoInstance.AddProduct(product);
 
-            // return list of products with newly added product to client
-            var newList = ProductRepository.RepoInstance.GetProducts();
-            return newList;
+                // return list of products with newly added product to client
+                var newList = ProductRepository.RepoInstance.GetProducts();
+                return newList;
+            }
+            catch
+            {
+                var message = new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent("We cannot use IDs greater than 100.")
+                };
+                throw new HttpResponseException(message);
+            }
         }
 
         // PUT api/products/5
@@ -64,9 +78,9 @@ namespace DeltatreChallenge.Controllers
         {
             products = new List<Product>()
             {
-                new Product {Name = "TV", Desc = "1080p Flat Screen", Quantity = 5},
-                new Product {Name = "Dishwasher", Desc = "Low Water, High Effeciency Dishwasher", Quantity = 3},
-                new Product {Name = "Lightbulb", Desc = "High Effeciency LED Lightbulb", Quantity = 8}
+                //new Product {Name = "TV", Desc = "1080p Flat Screen", Quantity = 5},
+                //new Product {Name = "Dishwasher", Desc = "Low Water, High Effeciency Dishwasher", Quantity = 3},
+                //new Product {Name = "Lightbulb", Desc = "High Effeciency LED Lightbulb", Quantity = 8}
             };
         }
 
@@ -78,10 +92,15 @@ namespace DeltatreChallenge.Controllers
         public Product AddProduct(Product product)
         {
             bool alreadyExists = products.Any(item => item.Name == product.Name);
-
+            // If product with name already exists, retun error
             if (alreadyExists)
             {
-                throw new Exception("Item already exists");
+                var message = new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent("Item already exists")
+                };
+
+                throw new HttpResponseException(message);
             }
             try
             {
