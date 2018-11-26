@@ -33,7 +33,7 @@ namespace DeltatreChallenge.Controllers
 
         // POST api/products
         [Microsoft.AspNetCore.Mvc.HttpPost]
-        public List<Product> Post([Microsoft.AspNetCore.Mvc.FromBody]Product product)
+        public bool Post([Microsoft.AspNetCore.Mvc.FromBody]Product product)
         {
            try
             {
@@ -42,15 +42,11 @@ namespace DeltatreChallenge.Controllers
 
                 // return list of products with newly added product to client
                 var newList = ProductRepository.RepoInstance.GetProducts();
-                return newList;
+                return true;
             }
             catch
             {
-                var message = new HttpResponseMessage(HttpStatusCode.BadRequest)
-                {
-                    Content = new StringContent("We cannot use IDs greater than 100.")
-                };
-                throw new HttpResponseException(message);
+                return false;
             }
         }
 
